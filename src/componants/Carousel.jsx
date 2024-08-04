@@ -53,10 +53,78 @@ const Carousel = () => {
     })
   }, [isEnd, videoId])
 
+  useEffect(() => {
+    let currentProcess = 0
+    if (spanDivRef.current[videoId]) {
+      let animation = gsap.to(spanDivRef.current[videoId], {
+        onUpdate: () => {
+          const progress = Math.ceil(animation.progress() * 100)
+          if (currentProcess !== progress) {
+            currentProcess = progress
+            gsap.to(spanDivRef.current[videoId], {
+              width:
+                window.innerWidth < 760
+                  ? "10vw"
+                  : window.innerWidth < 1200
+                  ? "10vw"
+                  : "4vw",
+            })
+
+            gsap.to(spanFillRef.current[videoId], {
+              width: `${currentProcess}%`,
+              background: "white",
+            })
+          }
+        },
+        onComplete: () => {
+          if (isPlaying) {
+            gsap.to(spanDivRef.current[videoId], {
+              width: "12px",
+            })
+          }
+        },
+      })
+
+      if (videoId === 0) {
+        animation.restart()
+        spanFillRef.current.map((el) => (el.style.background = "transparent"))
+      }
+
+      const animUpdate = () => {
+        animation.progress(
+          videoRef.current[videoId].currentTime /
+            hightlightsSlides[videoId].videoDuration
+        )
+      }
+
+      if (isPlaying) {
+        gsap.ticker.add(animUpdate)
+      } else {
+        gsap.ticker.remove(animUpdate)
+      }
+    }
+  }, [videoId, startPlay])
+
   const handleProcess = (value, i) => {
     switch (value) {
       case "play-next":
         setVideo((pre) => ({ ...pre, isEnd: true, videoId: i + 1 }))
+        break
+
+      case "last-video":
+        setVideo((pre) => ({ ...pre, isLast: true }))
+        break
+
+      case "reset-video":
+        setVideo((pre) => ({ ...pre, isLast: false, videoId: 0 }))
+        break
+
+      case "play":
+        setVideo((pre) => ({ ...pre, isPlaying: true }))
+        break
+
+      case "pause":
+        setVideo((pre) => ({ ...pre, isPlaying: false }))
         break
 
       default:
@@ -92,7 +160,7 @@ const Carousel = () => {
         ))}
       </div>
       <div className="flex justify-center items-center relative mt-10 gap-4">
-        <div className="flex gap-4 rounded-full px-4 py-4 bg-slate-900 ">
+        <div className="flex gap-4 rounded-full px-4 py-4 bg-zinc-800 ">
           {videoRef.current.map((_, i) => (
             <span
               key={i}
@@ -101,12 +169,23 @@ const Carousel = () => {
             >
               <span
                 ref={(el) => (spanFillRef.current[i] = el)}
-                className="flex w-1 h-3 bg-white rounded-full"
+                className="flex h-3 rounded-full"
               />
             </span>
           ))}
         </div>
-        <button className="w-11 h-11 rounded-full bg-slate-900"></button>
+        <button
+          className="w-11 h-11 rounded-full bg-zinc-800 text-white"
+          onClick={
+            isLast
+              ? () => handleProcess("reset-video")
+              : isPlaying
+              ? () => handleProcess("pause")
+              : () => handleProcess("play")
+          }
+        >
+          {isLast ? "$" : isPlaying ? "||" : ">"}
+        </button>
       </div>
     </>
   )

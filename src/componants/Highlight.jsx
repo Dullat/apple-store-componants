@@ -11,9 +11,9 @@ const Highlight = () => {
     })
   })
   return (
-    <section className="w-screen common-padding overflow-hidden bg-black h-full min-h-10">
+    <section className="w-screen common-padding overflow-hidden bg-zinc-950 h-full min-h-10">
       <div className="screen-max-width">
-        <div className="flex">
+        <div className="flex mb-10">
           <h1 id="title" className="section-heading">
             Highlights
           </h1>
